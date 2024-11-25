@@ -1,0 +1,44 @@
+groups:
+- name: alert.rules
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 10m
+    labels:
+      severity: "critical"
+      client: "{{ $labels.cluster }}"
+    annotations:
+      summary: "{{ $labels.cluster }} - {{ $labels.endpoint }} - Endpoint {{ $labels.instance }} down"
+      description: "{{ $labels.cluster }} - {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
+  
+  - alert: HostOutOfMemory
+    expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 15
+    for: 10m
+    labels:
+      severity: warning
+      client: "{{ $labels.cluster }}"
+    annotations:
+      summary: "{{ $labels.cluster }} - {{ $labels.endpoint }} - Host out of memory (instance {{ $labels.instance }})"
+      description: "{{ $labels.cluster }} - Node memory is filling up (< 15% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_avail_bytes{mountpoint="/"} * 100) / node_filesystem_size_bytes{mountpoint="/"} < 5
+    for: 1s
+    labels:
+      severity: warning
+      client: "{{ $labels.cluster }}"
+    annotations:
+      summary: "{{ $labels.cluster }} - {{ $labels.endpoint }} - Host out of disk space (instance {{ $labels.instance }})"
+      description: "{{ $labels.cluster }} - Disk is almost full (< 5% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: HostHighCpuLoad
+    expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 99
+    for: 5m
+    labels:
+      severity: warning
+      client: "{{ $labels.cluster }}"
+    annotations:
+      summary: "{{ $labels.cluster }} - {{ $labels.endpoint }} - Host high CPU load (instance {{ $labels.instance }})"
+      description: "{{ $labels.cluster }} - CPU load is > 99%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"

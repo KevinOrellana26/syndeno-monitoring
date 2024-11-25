@@ -1,0 +1,103 @@
+version: '3'
+ 
+############################### PROMETHEUS #################################  
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    networks:
+     syndeno-network:
+      ipv4_address: 172.30.0.2  
+    ports: 
+    - "9090:9090"
+    volumes:
+      - ./prometheus/:/etc/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.config.file=/etc/prometheus/web.yml"
+      - "--storage.tsdb.retention.size=3GB"
+      - "--storage.tsdb.wal-compression"
+    restart: always
+
+################################ ALERTMANAGER ############################################
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    networks:
+      syndeno-network:
+       ipv4_address: 172.30.0.3
+    ports: 
+    - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    restart: always
+
+################################ GRAFANA ####################################   
+
+  grafana:
+    image: grafana/grafana-oss
+    container_name: grafana
+    networks:
+     syndeno-network:
+      ipv4_address: 172.30.0.4
+    ports:
+    - "3000:3000"
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - grafana_data:/var/lib/grafana
+    restart: always
+
+################################ NGINX AND CERTBOT ####################################  
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: unless-stopped
+    networks:
+     syndeno-network:
+      ipv4_address: 172.30.0.5
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - web-root:/var/www/certbot
+      - ./nginx/nginx-conf:/etc/nginx/conf.d
+      - ./nginx/nginx-conf/.htpasswd:/etc/nginx/.htpasswd
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - prometheus
+      - alertmanager
+      - grafana
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/var/www/certbot
+    depends_on:
+      - nginx
+    command: certonly --webroot --webroot-path=/var/www/certbot --email tls.certificates@syndeno.com --agree-tos --force-renewal -d rgmftcv.gc.syndeno.net -d tgxmoas.gc.syndeno.net -d cracbqb.gc.syndeno.net
+
+networks:
+  syndeno-network:
+    ipam:
+     driver: default
+     config:
+       - subnet: 172.30.0.0/16
+
+volumes:
+  alertmanager_data:
+  grafana_data:
+  certbot-etc:
+  certbot-var:
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/korellana/syndeno-monitoring/views/
+      o: bind
