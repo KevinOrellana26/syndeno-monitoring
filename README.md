@@ -1,6 +1,10 @@
 <p align="center"><a href="https://www.syndeno.com/"><img src="https://syndeno.cloud/assets/images/logo/logo.svg" alt="Syndeno" width="150"/></a></p>
 <h2 align="center">Syndeno Monitoring</h2>
 
+# Índice
+- [Arquitectura de Monitoreo](#arquitectura-de-monitoreo)
+- [Despliegue de Arquitectura](#despligue-de-arquitectura)
+
 #### Introducción
 Este repositorio contiene los ficheros de configuración de los servicios para la infraestructura central de Syndeno:
 - Prometheus
@@ -12,6 +16,101 @@ Este repositorio contiene los ficheros de configuración de los servicios para l
 Y el `docker-compose.yml` para levantar todas las instancias con un solo comando.
 
 ------------
+### Arquitectura de monitoreo
+Diagrama: instancia central de prometheus + instancias de los clientes.
+![diagrama](https://github.com/user-attachments/assets/e1454e93-b93d-406e-a090-7e797254e1e1)
+
+Gracias a la configuración estática y los **targets**, el Prometheus central puede recoger las métricas de los Prometheus de los clientes y poder visualizar estas métricas en el **Grafana central**.
+
+#### Fichero de configuración: prometheus.yml
+```yml
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+  scrape_timeout: 10s
+rule_files:
+  - "kubernetes_rules.yml"
+  - "alertasprueba.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'job_1'
+    honor_labels: true
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    follow_redirects: true
+    scheme: 'https'
+    tls_config:
+      insecure_skip_verify: false
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{job!=""}'
+    basic_auth:
+      username: 'prometheus'
+      password: "xxxxxx"
+    static_configs:
+      - targets: ['xxxxxx']
+        labels:
+          client: 'xxxxx'
+          prometheus_up: 'xxxxx'
+          cluster: 'xxxxx'
+
+  - job_name: 'job_80'
+    honor_labels: true
+    tls_config:
+      insecure_skip_verify: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{job!=""}'
+    static_configs:
+      - targets: ['pth.plt.ops.syndeno.io']
+        labels:
+          client: 'syndeno-ops'
+          prometheus_up: 'syndeno-ops'
+    basic_auth:
+      username: 'admin'
+      password: 'xxxxxxxxx'
+```
+* **Global:**
+    * **scrape_interval:** frecuencia con la que Prometheus recopila métricas (30s por defecto).
+    * **evaluation_interval:** intervalo de evaluación de reglas (30s).
+    * **scrape_timeout:** tiempo máximo para cada consulta (10s).
+* **Rule Files:**
+    * Archivos de reglas para alertas (**kubernetes_rules.yml**, **alertasprueba.yml**).
+* **Alerting:**
+    * Configura la conexión con **Alertmanager:**
+         * **targets:** dirección(es) del Alertmanager (p.ej, **alertmanager:9093**).
+* **Scrape Configs:**
+    * Configura cómo y dónde Prometheus recopila métricas.
+         1. **job_1:**
+            * **Autenticación básica:** usuario *prometheus* con contraseña.
+            * **TLS:** validación de los certificados.
+            * **Ruta:** **/federate**, como parámetros **match[]: {job!=""}** para filtrar métricas.
+            * **Objetivo:** Define etiquetas específicas (**client, prometheus_up, cluster**).
+         2. **job_80:** dirección(es) del Alertmanager (p.ej, **alertmanager:9093**).
+            * **Autenticación básica:** usuario *admin* con contraseña.
+            * **TLS:** validación de certificados desactivada.
+            * **Ruta:** **/federate**, filtrando métricas similares al *job_1*.
+            * **Objetivo:** Monitoriza **pth.plt.ops.syndeno.io** con etiquetas específicas.
+
+**Conceptos clave**
+* **honor_labels:** Respeta etiquetas de los datos originales.
+* **insecure_skip_verify:** (true/false). Controla si se valida el certificado TLS.
+* **metrics_path:** ruta en el servidor para recopilar métricas.
+
+
+
+
+
+------------
+### Despligue de Arquitectura
 #### Primeros pasos
 Para poder levantar los servicios debemos de estar ubicados en donde se encuentra el fichero `docker-compose.yml` y ejecutar el comando `docker-compose up -d`.  Esto levantaría los cinco contenedores pero daría un error, ya que **certbot**  no encontraría los nombres de dominio y no podría crear el certificado. Para crear el certificado debemos de realizar una serie de modificaciones en el fichero `nginx.conf` para que: la primera vez que iniciemos los contenedores, se creen los certificados y nos lance la ruta en donde se han almacenado, posteriormente, modificamos el fichero `nginx.conf` indicando la ruta en donde se encuentra el certificado y otras configuraciones. 
 
