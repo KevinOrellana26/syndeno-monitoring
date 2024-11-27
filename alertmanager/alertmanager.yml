@@ -50,12 +50,5 @@ receivers:
     smarthost: mx.syndeno.net:587
     auth_username: 'alert@syndeno.net'
     auth_identity: 'alert@syndeno.net'
-    auth_password: 'alert2022!' 
+    auth_password: 'xxxxx' 
     send_resolved: true
-
-# - name: 'null'    
-
-# inhibit_rules:
-#  - source_match:
-#      severity: 'critical'
-#    equal: ['alertname', 'dev', 'instance']
