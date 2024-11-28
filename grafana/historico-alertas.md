@@ -8,7 +8,7 @@ Este documento detalla las consultas para las alertas que se muestran en el pane
   - [Alertas sin importar el cliente](#alertas-sin-importar-el-cliente)
   - [Alertas por cliente](#alertas-por-cliente)
   - [Conteo de alertas por cliente](#conteo-de-alertas-por-cliente)
-
+  - [Histórico alertas detallado](#histórico-alertas-detallado)
 
 ![panel](https://github.com/user-attachments/assets/10f44d3a-c026-48b4-8aef-bb5c0b489f07)
 
@@ -154,3 +154,38 @@ Vamos a explicar las partes más importantes de esta consulta (ya que los demás
 ```r.client =~ /${Clients:regex}/``` → si la variable Clients no es (.*), se evalúa esta parte, que compara los registros con el cliente seleccionado en Grafana usando una expresión regular. Solo si los registros cuyo campo client coincida con la expresión regular.
 
 Esta consulta devuelve una tabla con las columnas **client, alert_type y count**, donde cada fila representa un cliente y un tipo de alerta junto con el número de veces que dicha alerta se ha disparado en el periodo de tiempo especificado. La lógica del filtro con la variable **${client:regex}** permite que la consulta sea dinámica y que se pueda utilizar tanto de un cliente específico como para todos los clientes según la selección de la variable en Grafana.
+
+### Histórico alertas detallado
+![hist-detallado](https://github.com/user-attachments/assets/52e14c8b-d2dc-494a-9bea-7550e1b046fd)
+
+```text
+from(bucket: "prometheus_alerts")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r.container != "unknown")
+  |> filter(fn: (r) => r._field == "alertname")
+  |> filter(fn: (r) => r.severity == "critical" or r.severity == "warning") //filtra por ambos tipos de alertas
+  |> filter(fn: (r) => "${Clients:regex}" == ".*" or r.client =~ /${Clients:regex}/) // Expresión regular (.*)
+  |> keep(columns: ["_value", "category", "client", "namespace", "pod", "severity"])
+  |> group(columns: ["_value", "client","severity","pod", "namespace"]) // Agrupar por estas columnas clave
+  |> map(fn: (r) => ({r with count: 1})) // Añadir la columna "count" con valor 1
+  |> sum(column: "count") // Sumar el conteo para cada grupo
+  |> rename(columns: { "count": "alert_count" , "_value": "alert"}) // Renombrar la columna de conteo para claridad
+  |> group() // Agrupar para presentación
+```
+
+**Explicación de consulta**
+Esta consulta es similar a la consulta [Conteo de alertas por cliente](#conteo-de-alertas-por-cliente), realizando unos pequeños cambios descritos a continuación para mostrar más detallada la alerta:
+
+```|> filter(fn: (r) => r.severity == "critical" or r.severity == "warning")``` → filtra las alertas con severidad **"critical"** o **"warning"**.
+
+```|> keep(columns: ["_value", "category", "client", "namespace", "pod", "severity"])``` → mantiene más columnas para realizar una análisis más detallado.
+
+```|> group(columns: ["_value", "client","severity","pod", "namespace"])``` → agrupa por más columnas.
+
+```|> rename(columns: { "count": "alert_count" , "_value": "alert"})``` → renombra **_value** a **alert** y **count** a **alert_count**.
+
+
+
+
+
+
