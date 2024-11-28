@@ -4,7 +4,7 @@
 # Índice
 - [Arquitectura de Monitoreo](#arquitectura-de-monitoreo)
 - [Despliegue de Arquitectura](#despligue-de-arquitectura)
-- [Panel de Alertas](./grafana/README.md)
+- [Panel de Alertas](./grafana/historico-alertas.md)
 
 #### Introducción
 Este repositorio contiene los ficheros de configuración de los servicios para la infraestructura central de Syndeno:
