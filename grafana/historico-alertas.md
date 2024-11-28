@@ -1,18 +1,18 @@
 # Panel Histórico de alertas
 Este documento detalla las consultas para las alertas que se muestran en el panel **Histórico de Alertas**. El propósito es proporcionar una explicación de cómo se obtiene y se presenta la información de las alertas. Gracias a esta guía podrás entender como están creadas cada consulta.
 ## Índice
-- [Creación de la variable "clients"](#creacion-de-la-variable-clients)
+- [Creación de la variable clients](#creación-de-la-variable-clients)
 - [Variables internas de Grafana](#variables-internas-de-grafana)
 - [Paneles](#paneles)
-  - [Alerta más disparada](#alerta-mas-disparada)
-  - [Histórico de alertas sin importar el cliente)](#historico-de-alertas-sin-importar-el-cliente)
-  - [Histórico de alertas por cliente](historico-de-alertas-por-cliente)
-  - [Histórico de alertas conteo de alertas por cliente)](historico-de-alertas-conteo-de-alertas-por-cliente)
+  - [Alerta más disparada](#alerta-más-disparada)
+  - [Alertas sin importar el cliente](#alertas-sin-importar-el-cliente)
+  - [Alertas por cliente](#alertas-por-cliente)
+  - [Conteo de alertas por cliente](#conteo-de-alertas-por-cliente)
 
 
 ![panel](https://github.com/user-attachments/assets/10f44d3a-c026-48b4-8aef-bb5c0b489f07)
 
-## Creación de la variable "clients"
+## Creación de la variable clients
 Se crea esta variable para que algunos paneles sean dinámicos. Se utiliza la expresión regular **(.*) == "all"** para tener una lista de todos los clientes. Ten presente esto, ya que nos será de utilidad en el panel *"Histórico de alertas del cliente"*.
 
 ![creacion-var](https://github.com/user-attachments/assets/ddf230ab-f536-45ce-a3f7-2f63c55816c9)
@@ -76,7 +76,7 @@ from(bucket: "prometheus_alerts")
 
 ```|> limit(n: 1)``` → limita los resultados, para solo mostrar la primera alerta, que será la más frecuente.
 
-### Histórico de alertas (conteo por alerta, sin importar el cliente)
+### Alertas sin importar el cliente
 Consulta que devuelve el número de veces que se ha disparado cada tipo de alerta en un período de tiempo específico. 
 
 ![panel-cont-alertas](https://github.com/user-attachments/assets/aee5456a-8855-4a19-a7ec-31f98c1396c2)
@@ -100,7 +100,7 @@ Esta consulta es iguala la consulta anterior **Alerta más disparada**, con exce
 
 Esta consulta devuelve una tabla con dos columnas: **alert_type** y **count**. Cada fila representa un tipo de alerta y el número de veces que se ha disparado en el rango de tiempo seleccionado.
 
-### Histórico de alertas por cliente
+### Alertas por cliente
 Cuenta el número total de alertas disparadas, agrupadas por cliente, en un período de tiempo específico.
 
 ![panel-hist-cliente](https://github.com/user-attachments/assets/06e8603d-1fa1-47e5-969b-23ec8f87d2da)
@@ -122,7 +122,7 @@ from(bucket: "prometheus_alerts")
 
 La alerta es igual a las anteriores. La única diferencia es que se agrega por la columna **client**.
 
-### Histórico de alertas por cliente (conteo de alertas de cada tipo por cliente)
+### Conteo de alertas por cliente
 
 Cuenta el número de veces que se han disparado alertas por cliente y tipo, permitiendo la selección de un cliente específico o de todos los clientes mediante una variable de Grafana.
 
