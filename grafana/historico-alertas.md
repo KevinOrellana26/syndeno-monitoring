@@ -5,9 +5,9 @@ Este documento detalla las consultas para las alertas que se muestran en el pane
 - [Variables internas de Grafana](#variables-internas-de-grafana)
 - [Paneles](#paneles)
   - [Alerta más disparada](#alerta-mas-disparada)
-  - [Histórico de alertas (conteo por alerta, sin importar el cliente)](#historico-de-alertas-conteo-por-alerta-sin-importar-el-cliente)
+  - [Histórico de alertas sin importar el cliente)](#historico-de-alertas-sin-importar-el-cliente)
   - [Histórico de alertas por cliente](historico-de-alertas-por-cliente)
-  - [Histórico de alertas por cliente (conteo de alertas de cada tipo por cliente)](historico-de-alertas-por-cliente-conteo-de-alertas-de-cada-tipo-por-cliente)
+  - [Histórico de alertas conteo de alertas por cliente)](historico-de-alertas-conteo-de-alertas-por-cliente)
 
 
 ![panel](https://github.com/user-attachments/assets/10f44d3a-c026-48b4-8aef-bb5c0b489f07)
