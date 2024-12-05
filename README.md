@@ -19,7 +19,8 @@ Y el `docker-compose.yml` para levantar todas las instancias con un solo comando
 ------------
 ### Arquitectura de monitoreo
 Diagrama: instancia central de prometheus + instancias de los clientes.
-![diagrama](https://github.com/user-attachments/assets/e1454e93-b93d-406e-a090-7e797254e1e1)
+![Arquitectura_Monitoreo](https://github.com/user-attachments/assets/1cf61222-6a53-4958-b6d0-f00796dab3f2)
+
 
 Gracias a la configuración estática y los **targets**, el Prometheus central puede recoger las métricas de los Prometheus de los clientes y poder visualizar estas métricas en el **Grafana central**.
 

@@ -10,20 +10,12 @@ Este documento detalla las consultas para las alertas que se muestran en el pane
   - [Conteo de alertas por cliente](#conteo-de-alertas-por-cliente)
   - [Histórico alertas detallado](#histórico-alertas-detallado)
 
-<br>
-   <a href="img/panel.png" target="_blank">
-       <img src="img/panel.png" alt="panel">
-   </a>
-<br>
+<img src="img/panel.png" alt="panel">
 
 ## Creación de la variable clients
 Se crea esta variable para que algunos paneles sean dinámicos. Se utiliza la expresión regular **(.*) == "all"** para tener una lista de todos los clientes. Ten presente esto, ya que nos será de utilidad en el panel *"Histórico de alertas del cliente"*.
 
-<br>
-   <a href="img/creacion-var.png" target="_blank">
-       <img src="img/creacion-var.png" alt="creacion-var">
-   </a>
-<br>
+<img src="img/creacion-var.png" alt="creacion-var">
 
 ## Variables internas de Grafana
 Se utilizan dos variables que son internas de Grafana. Son los rangos de fechas, gracias a estos podemos obtener las métricas entre esos rangos de tiempos.
@@ -38,11 +30,7 @@ Se utilizan dos variables que son internas de Grafana. Son los rangos de fechas,
 ### Alerta más disparada
 Con este panel obtenemos la alerta más frecuente en un rango de tiempo específico. Sin importar el cliente.
 
-<br>
-   <a href="img/panel-alerta-mas-disparada.png" target="_blank">
-       <img src="img/panel-alerta-mas-disparada.png" alt="panel-alerta-mas-disparada">
-   </a>
-<br>
+<img src="img/panel-alerta-mas-disparada.png" alt="panel-alerta-mas-disparada">
 
 #### Consulta a la base de datos influxdb
 ```text
@@ -91,11 +79,7 @@ from(bucket: "prometheus_alerts")
 ### Alertas sin importar el cliente
 Consulta que devuelve el número de veces que se ha disparado cada tipo de alerta en un período de tiempo específico. 
 
-<br>
-   <a href="img/panel-cont-alertas.png" target="_blank">
-       <img src="img/panel-cont-alertas.png" alt="panel-cont-alertas">
-   </a>
-<br>
+<img src="img/panel-cont-alertas.png" alt="panel-cont-alertas">
 
 #### Consulta a la base de datos influxdb
 ```text
@@ -119,11 +103,7 @@ Esta consulta devuelve una tabla con dos columnas: **alert_type** y **count**. C
 ### Alertas por cliente
 Cuenta el número total de alertas disparadas, agrupadas por cliente, en un período de tiempo específico.
 
-<br>
-   <a href="img/panel-hist-cliente.png" target="_blank">
-       <img src="img/panel-hist-cliente.png" alt="panel-hist-cliente">
-   </a>
-<br>
+<img src="img/panel-hist-cliente.png" alt="panel-hist-cliente">
 
 ```text
 from(bucket: "prometheus_alerts")
@@ -146,11 +126,7 @@ La alerta es igual a las anteriores. La única diferencia es que se agrega por l
 
 Cuenta el número de veces que se han disparado alertas por cliente y tipo, permitiendo la selección de un cliente específico o de todos los clientes mediante una variable de Grafana.
 
-<br>
-   <a href="img/hist-cont-alert-client.png" target="_blank">
-       <img src="img/hist-cont-alert-client.png" alt="hist-cont-alert-client">
-   </a>
-<br>
+<img src="img/hist-cont-alert-client.png" alt="hist-cont-alert-client">
 
 ```text
 from(bucket: "prometheus_alerts")
@@ -180,10 +156,8 @@ Vamos a explicar las partes más importantes de esta consulta (ya que los demás
 Esta consulta devuelve una tabla con las columnas **client, alert_type y count**, donde cada fila representa un cliente y un tipo de alerta junto con el número de veces que dicha alerta se ha disparado en el periodo de tiempo especificado. La lógica del filtro con la variable **${client:regex}** permite que la consulta sea dinámica y que se pueda utilizar tanto de un cliente específico como para todos los clientes según la selección de la variable en Grafana.
 
 ### Histórico alertas detallado
-   <a href="img/hist-detallado.png" target="_blank">
-       <img src="img/hist-detallado.png" alt="hist-detallado">
-   </a>
-<br>
+
+<img src="img/hist-detallado.png" alt="hist-detallado">
 
 ```text
 from(bucket: "prometheus_alerts")
